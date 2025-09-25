@@ -28,13 +28,14 @@ import { ReviewsModule } from '@/modules/reviews/reviews.module';
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        uri: configService.get<string>('MONGODB_URI'),
-      }),
       inject: [ConfigService],
-    })
+      useFactory: (config: ConfigService) => ({
+        uri: config.get<string>('MONGODB_URI') || 'mongodb://localhost:27017',
+        dbName: config.get<string>('MONGODB_DB') || 'ka_food',
+      }),
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}
