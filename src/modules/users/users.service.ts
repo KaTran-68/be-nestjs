@@ -7,6 +7,9 @@ import { Model } from 'mongoose';
 import { hashPasswordHelper } from '@/helpers/util';
 import aqp from 'api-query-params';
 import mongoose from 'mongoose';
+import { CreateAuthDto } from '@/auth/dto/create-auth.dto';
+import { v4 as uuidv4 } from 'uuid';
+import dayjs from 'dayjs';
 @Injectable()
 export class UsersService {
   constructor(
@@ -65,7 +68,7 @@ export class UsersService {
   }
 
   async findByEmail(email: string) {
-    return await this.userModel.findOne({ email })
+    return await this.userModel.findOne({ email });
   }
 
   async update(updateUserDto: UpdateUserDto) {
@@ -82,5 +85,27 @@ export class UsersService {
       throw new BadRequestException('Invalid Id');
     }
     return `This action removes a #${id} user`;
+  }
+
+  async handleRegister(registerDto: CreateAuthDto) {
+    const { name, email, password } = registerDto;
+
+    const isExist = await this.isEmailExist(email);
+    if (isExist) {
+      throw new BadRequestException('Email already exists!');
+    }
+
+    const hashPassword = await hashPasswordHelper(password);
+    const user = await this.userModel.create({
+      name,
+      email,
+      password: hashPassword,
+      isActive: false,
+      codeId: uuidv4(),
+      codeExpired: dayjs().add(1, 'day'),
+    });
+    return {
+      _id: user._id,
+    };
   }
 }
