@@ -4,10 +4,14 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schemas/user.schema';
 import { Model } from 'mongoose';
-import { hashPasswordHelper } from '@/helpers/util';
+import { comparePasswordHelper, hashPasswordHelper } from '@/helpers/util';
 import aqp from 'api-query-params';
 import mongoose from 'mongoose';
-import { CodeAuthDto, CreateAuthDto } from '@/auth/dto/create-auth.dto';
+import {
+  ChangePasswordAuthDto,
+  CodeAuthDto,
+  CreateAuthDto,
+} from '@/auth/dto/create-auth.dto';
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
 import { MailerService } from '@nestjs-modules/mailer';
@@ -177,5 +181,58 @@ export class UsersService {
       .then(() => {})
       .catch(() => {});
     return { _id: user._id };
+  }
+
+  async retryPassword(email: string) {
+    const user = await this.userModel.findOne({ email });
+
+    if (!user) {
+      throw new BadRequestException('Tài khoản không tồn tại');
+    }
+
+    const codeId = uuidv4();
+
+    await user.updateOne({
+      codeId: codeId,
+      codeExpired: dayjs().add(5, 'minutes'),
+    });
+
+    this.mailerService
+      .sendMail({
+        to: user.email, // list of receivers
+        subject: "Change your password account at Ka'Web", // Subject line
+        template: 'changePassword.hbs',
+        context: {
+          name: user?.name ?? user.email,
+          activationCode: codeId,
+        },
+      })
+      .then(() => {})
+      .catch(() => {});
+    return { _id: user._id, email: user.email };
+  }
+
+  async changePassword(data: ChangePasswordAuthDto) {
+    if (data.password !== data.confirmPassword) {
+      throw new BadRequestException('Mật khẩu không chính xác');
+    }
+    const user = await this.userModel.findOne({
+      email: data.email,
+    });
+
+    if (!user) {
+      throw new BadRequestException('Tài khoản không tồn tại');
+    }
+    if (comparePasswordHelper(data.password, user.password)) {
+      throw new BadRequestException('Mật khẩu mới trùng với mật khẩu cũ!');
+    }
+    const isBeforeCheck = dayjs().isBefore(user.codeExpired);
+    if (isBeforeCheck) {
+      const newPassword = await hashPasswordHelper(data.password);
+      await user.updateOne({ password: newPassword });
+      return { isBeforeCheck };
+    } else {
+      throw new BadRequestException('Mã code không hợp lệ hoặc đã hết hạn!');
+    }
   }
 }
