@@ -2,34 +2,22 @@ import { Module } from '@nestjs/common';
 import { AppController } from '@/app.controller';
 import { AppService } from '@/app.service';
 import { UsersModule } from '@/modules/users/users.module';
-import { LikesModule } from '@/modules/likes/likes.module';
 
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { MenuItemOptionsModule } from '@/modules/menu.item.options/menu.item.options.module';
-import { MenuItemsModule } from '@/modules/menu.items/menu.items.module';
-import { MenusModule } from '@/modules/menus/menus.module';
-import { OrderDetailModule } from '@/modules/order.detail/order.detail.module';
-import { OrdersModule } from '@/modules/orders/orders.module';
-import { RestaurantsModule } from '@/modules/restaurants/restaurants.module';
-import { ReviewsModule } from '@/modules/reviews/reviews.module';
 import { AuthModule } from '@/auth/auth.module';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/passport/jwt-auth.guard';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { TransformInterceptor } from './core/transform.interceptor';
+import { CoursesModule } from './modules/courses/courses.module';
+import { join } from 'path';
+import { ServeStaticModule } from '@nestjs/serve-static';
 @Module({
   imports: [
     UsersModule,
-    LikesModule,
-    MenuItemOptionsModule,
-    MenuItemsModule,
-    MenusModule,
-    OrderDetailModule,
-    OrdersModule,
-    RestaurantsModule,
-    ReviewsModule,
+    CoursesModule,
     ConfigModule.forRoot({ isGlobal: true }),
     AuthModule,
     MongooseModule.forRootAsync({
@@ -37,7 +25,7 @@ import { TransformInterceptor } from './core/transform.interceptor';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         uri: config.get<string>('MONGODB_URI') || 'mongodb://localhost:27017',
-        dbName: config.get<string>('MONGODB_DB') || 'ka_food',
+        dbName: config.get<string>('MONGODB_DB') || 'ka_courses',
       }),
     }),
     MailerModule.forRootAsync({
@@ -66,6 +54,10 @@ import { TransformInterceptor } from './core/transform.interceptor';
           },
         },
       }),
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'), // folder chứa file
+      serveRoot: '/uploads', // client truy cập qua URL /uploads/filename.jpg
     }),
   ],
   controllers: [AppController],
