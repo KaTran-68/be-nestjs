@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { ChangePasswordUserDto, UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schemas/user.schema';
 import { Model } from 'mongoose';
@@ -242,5 +242,19 @@ export class UsersService {
     } else {
       throw new BadRequestException('Mã code không hợp lệ hoặc đã hết hạn!');
     }
+  }
+
+  async changePasswordUser(data: ChangePasswordUserDto) {
+    const user = await this.userModel.findOne({
+      email: data.email,
+    });
+
+    if (!user) {
+      throw new BadRequestException('Tài khoản không tồn tại');
+    }
+
+    const newPassword = await hashPasswordHelper(data.password);
+    await user.updateOne({ password: newPassword });
+    return { state: true };
   }
 }

@@ -23,7 +23,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     if (user.isActive === false) {
       throw new BadRequestException('Tài khoản chưa được kích hoạt');
     }
-    console.log(user);
+
     return user;
   }
 }

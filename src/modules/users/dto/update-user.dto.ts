@@ -17,3 +17,11 @@ export class UpdateUserDto {
   @IsOptional()
   image: string;
 }
+
+export class ChangePasswordUserDto {
+  @IsNotEmpty()
+  password: string;
+
+  @IsNotEmpty()
+  email: string;
+}

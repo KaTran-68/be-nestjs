@@ -42,7 +42,7 @@ export class CoursesController {
     @UploadedFile() file: Express.Multer.File,
     @Body() createCourseDto: CreateCourseDto,
   ) {
-    console.log(createCourseDto);
+
     const imagePath = file.path;
     return this.coursesService.create({ ...createCourseDto, image: imagePath });
   }
@@ -92,7 +92,7 @@ export class CoursesController {
     if (file) {
       dataToUpdate.image = file.path;
     }
-    console.log(dataToUpdate);
+
     return this.coursesService.update(id, dataToUpdate);
   }
 
