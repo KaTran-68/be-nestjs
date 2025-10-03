@@ -14,10 +14,12 @@ import { TransformInterceptor } from './core/transform.interceptor';
 import { CoursesModule } from './modules/courses/courses.module';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { BlogsModule } from '@/modules/blogs/blogs.module';
 @Module({
   imports: [
     UsersModule,
     CoursesModule,
+    BlogsModule,
     ConfigModule.forRoot({ isGlobal: true }),
     AuthModule,
     MongooseModule.forRootAsync({
@@ -59,6 +61,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
       rootPath: join(__dirname, '..', 'uploads'), // folder chứa file
       serveRoot: '/uploads', // client truy cập qua URL /uploads/filename.jpg
     }),
+    BlogsModule,
   ],
   controllers: [AppController],
   providers: [
