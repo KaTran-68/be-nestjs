@@ -5,6 +5,9 @@ export class CreateBlogDto {
   author: string;
 
   @IsNotEmpty()
+  authorId: string;
+
+  @IsNotEmpty()
   title: string;
 
   @IsNotEmpty()

@@ -30,6 +30,21 @@ export class BlogsController {
     return this.blogsService.findAll(query, +current, +pageSize);
   }
 
+  @Post('myblog/published')
+  findMyBlogPublished(
+    @Query() query: string,
+    @Query('current') current: string,
+    @Query('pageSize') pageSize: string,
+    @Body() body: { authorId: string },
+  ) {
+    return this.blogsService.findMyBlogPublished(
+      query,
+      +current,
+      +pageSize,
+      body.authorId,
+    );
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.blogsService.findOne(+id);

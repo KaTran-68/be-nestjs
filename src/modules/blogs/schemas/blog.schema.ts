@@ -10,13 +10,19 @@ export class Blog {
   author: string;
 
   @Prop()
+  authorId: string;
+
+  @Prop()
   title: string;
 
   @Prop()
   content: string;
 
   @Prop({ default: false })
-  isApprove: boolean;
+  isApproved: boolean;
+
+  @Prop({ default: false })
+  isDraft: boolean;
 
   @Prop({ unique: true })
   slug: string;

@@ -14,9 +14,10 @@ export class BlogsService {
   ) {}
 
   async create(createBlogDto: CreateBlogDto) {
-    const { author, title, content } = createBlogDto;
+    const { author, authorId, title, content } = createBlogDto;
     const blog = await this.blogModel.create({
       author,
+      authorId,
       title,
       content,
     });
@@ -29,6 +30,38 @@ export class BlogsService {
     const { filter, sort } = aqp(query);
     if (filter.current) delete filter.current;
     if (filter.pageSize) delete filter.pageSize;
+
+    const totalItems = (await this.blogModel.find(filter)).length;
+    const totalPages = Math.ceil(totalItems / pageSize);
+    const skip = (current - 1) * pageSize;
+    const results = await this.blogModel
+      .find(filter)
+      .limit(pageSize)
+      .skip(skip)
+      .sort(sort as any);
+    return {
+      meta: {
+        current,
+        pageSize,
+        pages: totalPages,
+        total: totalItems,
+      },
+      results,
+    };
+  }
+
+  async findMyBlogPublished(
+    query: string,
+    current: number,
+    pageSize: number,
+    authorId: string,
+  ) {
+    const { filter, sort } = aqp(query);
+    if (filter.current) delete filter.current;
+    if (filter.pageSize) delete filter.pageSize;
+
+    filter.authorId = authorId;
+    filter.isDraft = false;
 
     const totalItems = (await this.blogModel.find(filter)).length;
     const totalPages = Math.ceil(totalItems / pageSize);
