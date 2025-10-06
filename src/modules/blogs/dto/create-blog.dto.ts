@@ -11,5 +11,8 @@ export class CreateBlogDto {
   title: string;
 
   @IsNotEmpty()
+  isDraft: boolean;
+
+  @IsNotEmpty()
   content: string;
 }

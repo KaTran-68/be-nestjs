@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
 import aqp from 'api-query-params';
 import { InjectModel } from '@nestjs/mongoose';
 import { Blog } from './schemas/blog.schema';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 
 @Injectable()
 export class BlogsService {
@@ -14,22 +14,31 @@ export class BlogsService {
   ) {}
 
   async create(createBlogDto: CreateBlogDto) {
-    const { author, authorId, title, content } = createBlogDto;
+    const { author, authorId, title, content, isDraft } = createBlogDto;
     const blog = await this.blogModel.create({
       author,
       authorId,
       title,
       content,
+      isDraft,
     });
     return {
       _id: blog._id,
     };
   }
 
-  async findAll(query: string, current: number, pageSize: number) {
+  async findAll(
+    query: string,
+    current: number,
+    pageSize: number,
+    isApproved: boolean,
+  ) {
     const { filter, sort } = aqp(query);
     if (filter.current) delete filter.current;
     if (filter.pageSize) delete filter.pageSize;
+
+    filter.isDraft = false;
+    filter.isApproved = isApproved;
 
     const totalItems = (await this.blogModel.find(filter)).length;
     const totalPages = Math.ceil(totalItems / pageSize);
@@ -50,18 +59,19 @@ export class BlogsService {
     };
   }
 
-  async findMyBlogPublished(
+  async findMyBlog(
     query: string,
     current: number,
     pageSize: number,
     authorId: string,
+    isDraft: boolean,
   ) {
     const { filter, sort } = aqp(query);
     if (filter.current) delete filter.current;
     if (filter.pageSize) delete filter.pageSize;
 
     filter.authorId = authorId;
-    filter.isDraft = false;
+    filter.isDraft = isDraft;
 
     const totalItems = (await this.blogModel.find(filter)).length;
     const totalPages = Math.ceil(totalItems / pageSize);
@@ -86,11 +96,19 @@ export class BlogsService {
     return `This action returns a #${id} blog`;
   }
 
-  update(id: number, updateBlogDto: UpdateBlogDto) {
-    return `This action updates a #${id} blog`;
+  async update(id: string, updateBlogDto: UpdateBlogDto) {
+    return await this.blogModel.updateOne({ _id: id }, { ...updateBlogDto });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} blog`;
+  async remove(id: string) {
+    if (mongoose.isValidObjectId(id)) {
+      return await this.blogModel.deleteOne({ _id: id });
+    } else {
+      throw new BadRequestException('Invalid Id');
+    }
+  }
+
+  async approveBlog(id: string) {
+    return await this.blogModel.updateOne({ _id: id }, { isApproved: true });
   }
 }

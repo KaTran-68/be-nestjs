@@ -26,22 +26,24 @@ export class BlogsController {
     @Query() query: string,
     @Query('current') current: string,
     @Query('pageSize') pageSize: string,
+    @Query('isApproved') isApproved: boolean,
   ) {
-    return this.blogsService.findAll(query, +current, +pageSize);
+    return this.blogsService.findAll(query, +current, +pageSize, isApproved);
   }
 
-  @Post('myblog/published')
-  findMyBlogPublished(
+  @Post('myblog/fetchmyblog')
+  findMyBlog(
     @Query() query: string,
     @Query('current') current: string,
     @Query('pageSize') pageSize: string,
-    @Body() body: { authorId: string },
+    @Body() body: { authorId: string; isDraft: boolean },
   ) {
-    return this.blogsService.findMyBlogPublished(
+    return this.blogsService.findMyBlog(
       query,
       +current,
       +pageSize,
       body.authorId,
+      body.isDraft,
     );
   }
 
@@ -52,11 +54,16 @@ export class BlogsController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateBlogDto: UpdateBlogDto) {
-    return this.blogsService.update(+id, updateBlogDto);
+    return this.blogsService.update(id, updateBlogDto);
+  }
+
+  @Patch('/approveBlog/:id')
+  approveBlog(@Param('id') id: string) {
+    return this.blogsService.approveBlog(id);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.blogsService.remove(+id);
+    return this.blogsService.remove(id);
   }
 }
