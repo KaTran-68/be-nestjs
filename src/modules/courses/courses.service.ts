@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Req } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -21,8 +21,8 @@ export class CoursesService {
     return this.courseModel.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} course`;
+  async findOne(slug: string) {
+    return await this.courseModel.findOne({ slug });
   }
 
   async update(id: string, updateCourseDto: UpdateCourseDto) {

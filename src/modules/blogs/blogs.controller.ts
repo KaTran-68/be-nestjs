@@ -47,9 +47,9 @@ export class BlogsController {
     );
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.blogsService.findOne(+id);
+  @Get(':slug')
+  findOne(@Param('slug') slug: string) {
+    return this.blogsService.findOne(slug);
   }
 
   @Patch(':id')

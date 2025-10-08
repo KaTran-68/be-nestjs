@@ -16,7 +16,6 @@ import { UpdateCourseDto } from './dto/update-course.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { extname } from 'path';
 import { diskStorage } from 'multer';
-import { Public } from '@/decorator/customize';
 import { Request } from 'express';
 
 @Controller('courses')
@@ -42,7 +41,6 @@ export class CoursesController {
     @UploadedFile() file: Express.Multer.File,
     @Body() createCourseDto: CreateCourseDto,
   ) {
-
     const imagePath = file.path;
     return this.coursesService.create({ ...createCourseDto, image: imagePath });
   }
@@ -59,12 +57,22 @@ export class CoursesController {
       name: course.name,
       description: course.description,
       image: course.image ? `${host}/${course.image}` : null,
+      slug: course.slug,
     }));
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.coursesService.findOne(+id);
+  @Get(':slug')
+  async findOne(@Param('slug') slug: string, @Req() req: Request) {
+    const host = `${req.protocol}://${req.headers.host}`;
+
+    const course = await this.coursesService.findOne(slug);
+    return {
+      _id: course.id,
+      name: course.name,
+      description: course.description,
+      image: course.image ? `${host}/${course.image}` : null,
+      slug: course.slug,
+    };
   }
 
   @Patch(':id')
