@@ -39,4 +39,26 @@ export class CoursesService {
       throw new BadRequestException('Invalid Id');
     }
   }
+
+  async addOutcome(id: string, newItem: string) {
+    const course = await this.courseModel.findById(id);
+    if (!course) {
+      throw new Error('Course not found');
+    }
+    if (!newItem) {
+      throw new BadRequestException('Invalid outcome');
+    }
+    if (!course.outcomes.includes(newItem)) {
+      course.outcomes.push(newItem);
+    }
+
+    return course.save();
+  }
+
+  async deleteOutcome(id: string, outcome: string) {
+    return await this.courseModel.updateOne(
+      { _id: id },
+      { $pull: { outcomes: outcome } },
+    );
+  }
 }

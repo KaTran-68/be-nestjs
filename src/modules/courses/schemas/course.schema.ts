@@ -15,6 +15,30 @@ export class Course {
   @Prop()
   image: string;
 
+  @Prop({
+    type: [
+      {
+        key: String,
+        label: String,
+        items: [
+          {
+            title: String,
+            duration: { type: String, required: false },
+          },
+        ],
+      },
+    ],
+    default: [],
+  })
+  sections: Array<{
+    key: string;
+    label: string;
+    items: { title: string; duration?: string }[];
+  }>;
+
+  @Prop({ type: [String], default: [] })
+  outcomes: string[];
+
   @Prop({ unique: true })
   slug: string;
 }

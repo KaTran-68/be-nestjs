@@ -71,7 +71,8 @@ export class CoursesController {
       name: course.name,
       description: course.description,
       image: course.image ? `${host}/${course.image}` : null,
-      slug: course.slug,
+      outcomes: course.outcomes,
+      sections: course.sections,
     };
   }
 
@@ -107,5 +108,15 @@ export class CoursesController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.coursesService.remove(id);
+  }
+
+  @Patch('/outcomes/:id')
+  addOutcome(@Param('id') id: string, @Body('newItem') newItem: string) {
+    return this.coursesService.addOutcome(id, newItem);
+  }
+
+  @Delete('/outcomes/:id')
+  deleteOutcome(@Param('id') id: string, @Body('outcome') outcome: string) {
+    return this.coursesService.deleteOutcome(id, outcome);
   }
 }
